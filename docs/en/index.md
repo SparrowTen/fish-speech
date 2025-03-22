@@ -27,6 +27,10 @@
 
 ## Windows Setup
 
+!!! info "Attention"
+
+    We strongly suggest non-professional windows users use our official GUI to run the project. [GUI is here](https://github.com/AnyaCoder/fish-speech-gui).
+
 Professional Windows users may consider using WSL2 or Docker to run the codebase.
 
 ```bash
@@ -35,7 +39,7 @@ conda create -n fish-speech python=3.10
 conda activate fish-speech
 
 # Install pytorch
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip3 install torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 --index-url https://download.pytorch.org/whl/cu121
 
 # Install fish-speech
 pip3 install -e .
@@ -44,69 +48,50 @@ pip3 install -e .
 pip install https://github.com/AnyaCoder/fish-speech/releases/download/v0.1.0/triton_windows-0.1.0-py3-none-any.whl
 ```
 
-Non-professional Windows users can consider the following basic methods to run the project without a Linux environment (with model compilation capabilities, i.e., `torch.compile`):
-
-1. Extract the project package.
-2. Click `install_env.bat` to install the environment.
-3. If you want to enable compilation acceleration, follow this step:
-    1. Download the LLVM compiler from the following links:
-        - [LLVM-17.0.6 (Official Site Download)](https://huggingface.co/fishaudio/fish-speech-1/resolve/main/LLVM-17.0.6-win64.exe?download=true)
-        - [LLVM-17.0.6 (Mirror Site Download)](https://hf-mirror.com/fishaudio/fish-speech-1/resolve/main/LLVM-17.0.6-win64.exe?download=true)
-        - After downloading `LLVM-17.0.6-win64.exe`, double-click to install, select an appropriate installation location, and most importantly, check the `Add Path to Current User` option to add the environment variable.
-        - Confirm that the installation is complete.
-    2. Download and install the Microsoft Visual C++ Redistributable to solve potential .dll missing issues:
-        - [MSVC++ 14.40.33810.0 Download](https://aka.ms/vs/17/release/vc_redist.x64.exe)
-    3. Download and install Visual Studio Community Edition to get MSVC++ build tools and resolve LLVM's header file dependencies:
-        - [Visual Studio Download](https://visualstudio.microsoft.com/zh-hans/downloads/)
-        - After installing Visual Studio Installer, download Visual Studio Community 2022.
-        - As shown below, click the `Modify` button and find the `Desktop development with C++` option to select and download.
-    4. Download and install [CUDA Toolkit 12.x](https://developer.nvidia.com/cuda-12-1-0-download-archive?target_os=Windows&target_arch=x86_64)
-4. Double-click `start.bat` to open the training inference WebUI management interface. If needed, you can modify the `API_FLAGS` as prompted below.
-
-!!! info "Optional"
-
-	Want to start the inference WebUI? 
-
-    Edit the `API_FLAGS.txt` file in the project root directory and modify the first three lines as follows: 
-    ```
-     --infer 
-     # --api 
-     # --listen ...
-     ...
-    ```
-
-!!! info "Optional"
-
-	Want to start the API server? 
-
-    Edit the `API_FLAGS.txt` file in the project root directory and modify the first three lines as follows:
-
-    ``` 
-    # --infer
-    --api
-    --listen ...
-    ...
-    ```
-
-!!! info "Optional"
-
-	Double-click `run_cmd.bat` to enter the conda/python command line environment of this project.
-
 ## Linux Setup
 
+See [pyproject.toml](../../pyproject.toml) for details.
 ```bash
 # Create a python 3.10 virtual environment, you can also use virtualenv
 conda create -n fish-speech python=3.10
 conda activate fish-speech
 
 # Install pytorch
-pip3 install torch torchvision torchaudio
-
-# Install fish-speech
-pip3 install -e .[stable]
+pip3 install torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1
 
 # (Ubuntu / Debian User) Install sox + ffmpeg
-apt install libsox-dev ffmpeg
+apt install libsox-dev ffmpeg 
+
+# (Ubuntu / Debian User) Install pyaudio 
+apt install build-essential \
+    cmake \
+    libasound-dev \
+    portaudio19-dev \
+    libportaudio2 \
+    libportaudiocpp0
+    
+# Install fish-speech
+pip3 install -e .[stable]
+```
+
+## MacOS setup
+
+If you want to perform inference on MPS, please add the `--device mps` flag.
+Please refer to [this PR](https://github.com/fishaudio/fish-speech/pull/461#issuecomment-2284277772) for a comparison of inference speeds.
+
+!!! warning
+    The `compile` option is not officially supported on Apple Silicon devices, so there is no guarantee that inference speed will improve.
+
+```bash
+# install dependencies
+brew install portaudio
+# create a python 3.10 virtual environment, you can also use virtualenv
+conda create -n fish-speech python=3.10
+conda activate fish-speech
+# install pytorch
+pip install torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1
+# install fish-speech
+pip install -e .[stable]
 ```
 
 ## Docker Setup
@@ -152,13 +137,13 @@ apt install libsox-dev ffmpeg
     Make sure you are in the terminal inside the docker container, then download the required `vqgan` and `llama` models from our huggingface repository.
 
     ```bash
-    huggingface-cli download fishaudio/fish-speech-1.4 --local-dir checkpoints/fish-speech-1.4
+    huggingface-cli download fishaudio/fish-speech-1.5 --local-dir checkpoints/fish-speech-1.5
     ```
 
 4. Configure environment variables and access WebUI
 
     In the terminal inside the docker container, enter `export GRADIO_SERVER_NAME="0.0.0.0"` to allow external access to the gradio service inside docker.
-    Then in the terminal inside the docker container, enter `python tools/webui.py` to start the WebUI service.
+    Then in the terminal inside the docker container, enter `python tools/run_webui.py` to start the WebUI service.
 
     If you're using WSL or MacOS, visit [http://localhost:7860](http://localhost:7860) to open the WebUI interface.
 
@@ -166,6 +151,7 @@ apt install libsox-dev ffmpeg
 
 ## Changelog
 
+- 2024/12/03: Updated Fish-Speech to 1.5 version, supports more languages, and reaches SOTA in the Open-Source field.
 - 2024/09/10: Updated Fish-Speech to 1.4 version, with an increase in dataset size and a change in the quantizer's n_groups from 4 to 8.
 - 2024/07/02: Updated Fish-Speech to 1.2 version, remove VITS Decoder, and greatly enhanced zero-shot ability.
 - 2024/05/10: Updated Fish-Speech to 1.1 version, implement VITS decoder to reduce WER and improve timbre similarity.

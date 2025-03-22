@@ -25,84 +25,71 @@
 - GPU メモリ: 4GB（推論用）、8GB（ファインチューニング用）
 - システム: Linux、Windows
 
-## Windows セットアップ
+## Windowsセットアップ
 
-Window にて開発を行っている方へ: 本コードベースを実行するのに WSL2 または Docker を利用することができます。
+!!! info "注意"
+    Windowsの専門ユーザー以外の方には、GUIを使用してプロジェクトを実行することを強くお勧めします。[GUIはこちら](https://github.com/AnyaCoder/fish-speech-gui).
 
-あまり詳しくない人は、Linux 環境なしでコードベースを実行するために以下の手順に従ってください。（モデルコンパイル機能`torch.compile`を利用できます。）：
+プロフェッショナルなWindowsユーザーは、WSL2またはDockerを使用してコードベースを実行することを検討してください。
 
-<ol>
-   <li>プロジェクトの圧縮ファイルをダウンロードし、展開</li>
-   <li><code>install_env.bat</code>を開いて実行に必要な環境を整えます。
-      <ul>
-            <li><code>install_env.bat</code>の<code>USE_MIRROR</code>ミラーサイトを使用する場合、項目を編集してください。</li>
-            <li><code>USE_MIRROR=false</code>は、最新の安定版の<code>torch</code>をオリジナルサイトからダウンロードします。<code>USE_MIRROR=true</code>は、最新の<code>torch</code>をミラーサイトからダウンロードします。デフォルトは<code>true</code>です。</li>
-            <li><code>install_env.bat</code>の<code>INSTALL_TYPE</code>を編集して、コンパイル環境をダウンロードするかを設定できます。</li>
-            <li><code>INSTALL_TYPE=preview</code>は、コンパイル環境付きのプレビュー版をダウンロードします。<code>INSTALL_TYPE=stable</code>は、コンパイル環境なしの安定版をダウンロードします。</li>
-      </ul>
-   </li>
-   <li>ステップ2で<code>USE_MIRROR=preview</code>の場合、オプション、コンパイルモデル環境を有効にするたに以下のステップを実行してください。：
-      <ol>
-            <li>以下のリンクからLLVMコンパイラをダウンロードします：
-               <ul>
-                  <li><a href="https://huggingface.co/fishaudio/fish-speech-1/resolve/main/LLVM-17.0.6-win64.exe?download=true">LLVM-17.0.6（オリジナルサイト）</a></li>
-                  <li><a href="https://hf-mirror.com/fishaudio/fish-speech-1/resolve/main/LLVM-17.0.6-win64.exe?download=true">LLVM-17.0.6（ミラーサイト）</a></li>
-                  <li><code>LLVM-17.0.6-win64.exe</code>をダウンロードした後、ダブルクリックしてインストールし、適当な場所にインストールしてください。必ず<code>Add Path to Current User</code>をチェックして環境変数に追加することです。</li>
-                  <li>インストールが完了したことを確認してください。</li>
-               </ul>
-            </li>
-            <li>Microsoft Visual C++ 再頒布可能パッケージをダウンロードしてインストールし、dllの欠落問題を解決します。
-               <ul>
-                  <li><a href="https://aka.ms/vs/17/release/vc_redist.x64.exe">MSVC++ 14.40.33810.0 ダウンロード</a></li>
-               </ul>
-            </li>
-            <li>Visual Studio Community Editionをダウンロードしてインストールし、MSVC++ビルドツールを取得し、LLVMのヘッダーファイル依存関係を解決します。
-               <ul>
-                  <li><a href="https://visualstudio.microsoft.com/zh-hans/downloads/">Visual Studio ダウンロード</a></li>
-                  <li>Visual Studio Installerをインストールした後、Visual Studio Community 2022をダウンロードします。</li>
-                  <li>以下のスクリーンショットのように<code>Modify</code>ボタンをクリックし、<code>Desktop development with C++</code>オプションにチェックをつけてダウンロードします。</li>
-                  <p align="center">
-                     <img src="../assets/figs/VS_1.jpg" width="75%">
-                  </p>
-               </ul>
-            </li>
-            <li>インストール <a href="https://developer.nvidia.com/cuda-12-1-0-download-archive?target_os=Windows&target_arch=x86_64">CUDA Toolkit 12</a></li>
-      </ol>
-   </li>
-   <li><code>start.bat</code>を実行し、Fish-Speechのトレーニング/推論設定WebUIを開いてください。。
-      <ul>
-            <li>（オプション）直接推論ページに行きたい場合は、プロジェクトルートディレクトリの<code>API_FLAGS.txt</code>の最初の3行を次のように変更してください：
-               <pre><code>--infer
-# --api
-# --listen ...
-...</code></pre>
-            </li>
-            <li>（オプション）APIサーバーを起動したい場合は、プロジェクトルートディレクトリの<code>API_FLAGS.txt</code>の最初の3行を次のように変更してください：
-               <pre><code># --infer
---api
---listen ...
-...</code></pre>
-            </li>
-      </ul>
-   </li>
-   <li>（オプション）<code>run_cmd.bat</code>をダブルクリックして、このプロジェクトの仮想環境を有効化できます。</li>
-</ol>
+```bash
+# Python 3.10の仮想環境を作成（virtualenvも使用可能）
+conda create -n fish-speech python=3.10
+conda activate fish-speech
+
+# PyTorchをインストール
+pip3 install torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 --index-url https://download.pytorch.org/whl/cu121
+
+# fish-speechをインストール
+pip3 install -e .
+
+# (アクセラレーションを有効にする) triton-windowsをインストール
+pip install https://github.com/AnyaCoder/fish-speech/releases/download/v0.1.0/triton_windows-0.1.0-py3-none-any.whl
+```
 
 ## Linux セットアップ
 
+詳細については、[pyproject.toml](../../pyproject.toml)  を参照してください。
 ```bash
 # python 3.10の仮想環境を作成します。virtualenvも使用できます。
 conda create -n fish-speech python=3.10
 conda activate fish-speech
 
 # pytorchをインストールします。
-pip3 install torch torchvision torchaudio
-
-# fish-speechをインストールします。
-pip3 install -e .[stable]
+pip3 install torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1
 
 # (Ubuntu / Debianユーザー) sox + ffmpegをインストールします。
 apt install libsox-dev ffmpeg
+
+# (Ubuntu / Debianユーザー) pyaudio をインストールします。
+apt install build-essential \
+    cmake \
+    libasound-dev \
+    portaudio19-dev \
+    libportaudio2 \
+    libportaudiocpp0
+    
+# fish-speechをインストールします。
+pip3 install -e .[stable]
+
+```
+
+## macos setup
+
+推論をMPS上で行う場合は、`--device mps`フラグを追加してください。
+推論速度の比較は[こちらのPR](https://github.com/fishaudio/fish-speech/pull/461#issuecomment-2284277772)を参考にしてください。
+
+!!! warning
+    AppleSiliconのデバイスでは、compileオプションに正式に対応していませんので、推論速度が向上する保証はありません。
+
+```bash
+# create a python 3.10 virtual environment, you can also use virtualenv
+conda create -n fish-speech python=3.10
+conda activate fish-speech
+# install pytorch
+pip install torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1
+# install fish-speech
+pip install -e .[stable]
 ```
 
 ## Docker セットアップ
@@ -148,13 +135,13 @@ apt install libsox-dev ffmpeg
     Docker コンテナ内のターミナルにいることを確認し、huggingface リポジトリから必要な `vqgan` と `llama` モデルをダウンロードします。
 
     ```bash
-    huggingface-cli download fishaudio/fish-speech-1.4 --local-dir checkpoints/fish-speech-1.4
+    huggingface-cli download fishaudio/fish-speech-1.5 --local-dir checkpoints/fish-speech-1.5
     ```
 
 4. 環境変数の設定と WebUI へのアクセス
 
     Docker コンテナ内のターミナルで、`export GRADIO_SERVER_NAME="0.0.0.0"` と入力して、外部から Docker 内の gradio サービスにアクセスできるようにします。
-    次に、Docker コンテナ内のターミナルで `python tools/webui.py` と入力して WebUI サービスを起動します。
+    次に、Docker コンテナ内のターミナルで `python tools/run_webui.py` と入力して WebUI サービスを起動します。
 
     WSL または MacOS の場合は、[http://localhost:7860](http://localhost:7860) にアクセスして WebUI インターフェースを開くことができます。
 
@@ -162,6 +149,7 @@ apt install libsox-dev ffmpeg
 
 ## 変更履歴
 
+- 2024/12/03: Fish-Speech を 1.5にアップデートし、より多くの言語をサポートするようになりました。オープンソース領域ではSOTA（最先端）となっています。
 - 2024/09/10: Fish-Speech を Ver.1.4 に更新し、データセットのサイズを増加させ、quantizer n_groups を 4 から 8 に変更しました。
 - 2024/07/02: Fish-Speech を Ver.1.2 に更新し、VITS デコーダーを削除し、ゼロショット能力を大幅に強化しました。
 - 2024/05/10: Fish-Speech を Ver.1.1 に更新し、VITS デコーダーを実装して WER を減少させ、音色の類似性を向上させました。
